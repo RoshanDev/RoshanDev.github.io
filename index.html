@@ -245,6 +245,113 @@
             
               
                 
+                <a class="post-title-link" href="/2016/12/07/iOS 使用 https ， AFNetworking 报错 Error Domain=NSURLErrorDomain Code=-999 "cancelled"/" itemprop="url">
+                  iOS 使用 https ， AFNetworking 报错 Error Domain=NSURLErrorDomain Code=-999 "cancelled"
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-07T10:26:28+08:00" content="2016-12-07">
+              2016-12-07
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/12/07/iOS 使用 https ， AFNetworking 报错 Error Domain=NSURLErrorDomain Code=-999 "cancelled"/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/07/iOS 使用 https ， AFNetworking 报错 Error Domain=NSURLErrorDomain Code=-999 "cancelled"/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>先上我这儿成功的代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">- (void)testATS &#123;</div><div class="line">    //先导入证书，找到证书的路径</div><div class="line">    NSString *cerPath = [[NSBundle mainBundle] pathForResource:@&quot;cert&quot; ofType:@&quot;cer&quot;];</div><div class="line">    NSData *certData = [NSData dataWithContentsOfFile:cerPath];</div><div class="line">    </div><div class="line">    //AFSSLPinningModeNone 这个模式表示不做 SSL pinning，只跟浏览器一样在系统的信任机构列表里验证服务端返回的证书。若证书是信任机构签发的就会通过，若是自己服务器生成的证书，这里是不会通过的。</div><div class="line">    //AFSSLPinningModeCertificate 这个模式表示用证书绑定方式验证证书，需要客户端保存有服务端的证书拷贝，这里验证分两步，第一步验证证书的域名/有效期等信息，第二步是对比服务端返回的证书跟客户端返回的是否一致。</div><div class="line">    //AFSSLPinningModePublicKey 这个模式同样是用证书绑定方式验证，客户端要有服务端的证书拷贝，只是验证时只验证证书里的公钥，不验证证书的有效期等信息。只要公钥是正确的，就能保证通信不会被窃听，因为中间人没有私钥，无法解开通过公钥加密的数据。</div><div class="line">    </div><div class="line">    AFSecurityPolicy *securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];</div><div class="line">    if (certData) &#123;</div><div class="line">        securityPolicy.pinnedCertificates = @[certData];</div><div class="line">    &#125;</div><div class="line">    AFHTTPSessionManager *sessionManager = [AFHTTPSessionManager manager];</div><div class="line">    [sessionManager setSecurityPolicy:securityPolicy];</div><div class="line">    sessionManager.responseSerializer = [AFJSONResponseSerializer serializer];</div><div class="line">    sessionManager.responseSerializer.acceptableContentTypes = [sessionManager.responseSerializer.acceptableContentTypes setByAddingObject:@&quot;text/html&quot;];</div><div class="line"></div><div class="line">    NSString *urlStr = @&quot;https://huifang.tech/info.php&quot;;</div><div class="line">    [sessionManager GET:urlStr parameters:nil success:^(NSURLSessionDataTask *task, id responseObject) &#123;</div><div class="line">DDLog(@&quot;responseObject = %@&quot;, responseObject);</div><div class="line">    &#125; failure:^(NSURLSessionDataTask *task, NSError *error) &#123;</div><div class="line">        DDLog(@&quot;error = %@&quot;, error);</div><div class="line">    &#125;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为之前使用了 AFSSLPinningModeCertificate 模式<br><code>AFSecurityPolicy *securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeCertificate];</code><br>改成现在的 AFSSLPinningModeNone 模式，解决问题。<br>因为我的证书是 Symantec 的 DV SSL 证书，所以 securityPolicy 的 allowInvalidCertificates 和 validatesDomainName 属性都是默认值😁。自签的还没试过。<br>参考链接：</p>
+<ol>
+<li><a href="http://www.cocoachina.com/ios/20140916/9632.html" target="_blank" rel="external">AFNetworking源码解析&lt;三&gt;</a></li>
+<li><a href="http://stackoverflow.com/a/40100179" target="_blank" rel="external">stackoverflow</a></li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/08/18/HTML-CSS基础/" itemprop="url">
                   HTML+CSS基础
                 </a>
@@ -683,7 +790,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
